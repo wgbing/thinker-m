@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jyou.thinker.mapper.DictMapper">
+
+    <select id="listDictByParentId" resultType="com.jyou.thinker.domain.Dictionary">
+        SELECT
+            a.id,
+            a.config_key,
+            a.name,
+            a.code,
+            a.value,
+            a.note,
+            a.parent_id,
+            a.locked,
+            a.order_no,
+            a.create_time,
+            a.update_time,
+            (
+                SELECT
+                    count(*)
+                FROM
+                    sys_dictionary d
+                WHERE
+                    d.parent_id = a.id
+            ) AS size
+        FROM
+            sys_dictionary a
+        WHERE
+        <if test="parentId != null and parentId != ''">
+            a.parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            a.parent_id IS NULL
+        </if>
+        order by order_no
+    </select>
+
+    <select id="listDict" resultType="com.jyou.thinker.domain.Dictionary">
+        SELECT
+            a.id,
+            a.config_key,
+            a.name,
+            a.code,
+            a.value,
+            a.note,
+            a.parent_id,
+            a.locked,
+            a.order_no,
+            a.create_time,
+            a.update_time
+        FROM
+            sys_dictionary a
+        WHERE
+        <if test="map.parentId != null and map.parentId != ''">
+            a.parent_id = #{map.parentId}
+        </if>
+        <if test="map.parentId == null or map.parentId == ''">
+            a.parent_id IS NULL
+        </if>
+        <if test="map.name != null and map.name.trim() != '' ">
+            and a.name LIKE concat('%',#{map.name},'%')
+        </if>
+        <if test="map.configKey != null and map.configKey != '' ">
+            and a.config_key LIKE concat('%',#{map.configKey},'%')
+        </if>
+        <if test="map.locked != null and map.locked != ''">
+            and a.locked= #{map.locked}
+        </if>
+    </select>
+
+    <select id="countDictByParentId" resultType="int">
+        SELECT
+        count(*)
+        FROM
+            sys_dictionary a
+        WHERE
+        <if test="parentId != null and parentId != ''">
+            a.parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            a.parent_id IS NULL
+        </if>
+    </select>
+    <select id="listDictByConfigKey" resultType="com.jyou.thinker.domain.Dictionary">
+        SELECT
+            a.*
+        FROM
+            sys_dictionary a,
+            sys_dictionary b
+        WHERE
+            a.parent_id = b.id
+        <if test="configKey != null and configKey.trim() != '' ">
+            AND b.config_key = #{configKey}
+        </if>
+        ORDER BY
+            a.order_no
+    </select>
+
+    <delete id="batchRemove">
+        DELETE
+        FROM
+            sys_dictionary
+        WHERE
+          id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

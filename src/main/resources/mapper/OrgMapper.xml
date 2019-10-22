@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jyou.thinker.mapper.OrgMapper">
+
+    <select id="listOrg" resultType="com.jyou.thinker.domain.Org">
+        SELECT
+            a.id,
+            a.`enable`,
+            a. NAME,
+            a.remark,
+            a.short_name,
+            a.sort_no,
+            a.type,
+            a.create_time,
+            a.update_time,
+            ifnull(a.parent_id, 0) AS parent_id
+        FROM
+            sys_org a
+    </select>
+    <select id="listOrgByParentId" resultType="com.jyou.thinker.domain.Org">
+        SELECT
+        a.id,
+        a.`name`,
+        a.short_name,
+        a.type,
+        a.`enable`,
+        a.parent_id,
+        a.remark,
+        a.sort_no,
+        a.create_time,
+        a.update_time,
+        (
+        SELECT
+        count(*)
+        FROM
+        sys_org b
+        WHERE
+        b.parent_id = a.id
+        ) AS size
+        FROM
+        sys_org a
+        WHERE
+        <if test="parentId != null and parentId != ''">
+            a.parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            a.parent_id IS NULL
+        </if>
+    </select>
+
+    <delete id="batchRemove">
+        DELETE
+        FROM
+        sys_org
+        WHERE
+        id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

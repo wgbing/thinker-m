@@ -1,0 +1,9 @@
+/*给select一个固定高度，超出部分滚动条滚动显示*/
+.layui-form-select dl { max-height:200px; }
+/* 插入必填标记* */
+.required-sing {
+    color: #f00;
+}
+.layui-form-item .required-sing:before {
+    content: "* ";
+}

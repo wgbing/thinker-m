@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jyou.thinker.mapper.UserMapper">
+
+    <select id="findByPaging" resultType="com.jyou.thinker.domain.User">
+        select * from sys_user u
+        where u.deleted = 0
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(map.orgId)">
+            and u.org_id = #{map.orgId}
+        </if>
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(map.id)">
+            and u.id = #{map.id}
+        </if>
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(map.nickName)">
+            and u.nick_name like CONCAT('%', #{map.nickName}, '%')
+        </if>
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(map.startTime)">
+            <![CDATA[
+            and date_format(u.create_time, '%Y-%m-%d') >= #{map.startTime}
+            ]]>
+        </if>
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(map.endTime)">
+            <![CDATA[
+            and date_format(u.create_time, '%Y-%m-%d') <= #{map.endTime}
+            ]]>
+        </if>
+        <if test="@cn.hutool.core.util.StrUtil@isNotEmpty(field) and @cn.hutool.core.util.StrUtil@isNotEmpty(type)">
+            order by ${field} ${type}
+        </if>
+    </select>
+
+</mapper>

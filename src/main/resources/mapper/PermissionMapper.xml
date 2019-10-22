@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jyou.thinker.mapper.PermissionMapper">
+
+    <select id="findResKeysByUserId" resultType="java.lang.String">
+        select res_key from sys_permission where id in (
+          select permission_id from sys_role_permission where role_id in (select role_id from sys_user_role where user_id = #{userId})
+          union all
+          select permission_id from sys_user_permission where user_id = #{userId}
+        ) order by sort_no asc
+    </select>
+    <select id="listByParentId" resultType="com.jyou.thinker.domain.Permission">
+        SELECT
+        a.*, (
+        SELECT
+        count(*)
+        FROM
+        sys_permission b
+        WHERE
+        b.parent_id = a.id
+        ) AS size
+        FROM
+        sys_permission a
+        <where>
+            <choose>
+                <when test="parentId != null and parentId != ''">
+                    a.parent_id = #{parentId}
+                </when>
+                <otherwise>
+                    a.parent_id IS NULL
+                </otherwise>
+            </choose>
+            <if test="type != null and type != ''">
+                AND a.type = #{type}
+            </if>
+        </where>
+        ORDER BY
+        a.sort_no
+    </select>
+
+    <select id="listByUserId" resultType="com.jyou.thinker.domain.Permission">
+        SELECT
+        t.*
+        FROM
+        (
+        SELECT DISTINCT
+        a.*
+        FROM
+        sys_permission a,
+        sys_user b,
+        sys_user_permission c
+        WHERE
+        a.id = c.permission_id
+        AND b.id = c.user_id
+        AND b.deleted = 0
+        <if test="type != null and type != ''">
+            AND a.type = #{type}
+        </if>
+        <choose>
+            <when test="parentId != null and parentId != ''">
+                AND a.parent_id = #{parentId}
+            </when>
+            <otherwise>
+                AND a.parent_id IS NULL
+            </otherwise>
+        </choose>
+        <if test="userId != null and userId != ''">
+            AND b.id = #{userId}
+        </if>
+        UNION ALL
+        SELECT DISTINCT
+        a.*
+        FROM
+        sys_permission a,
+        sys_role b,
+        sys_role_permission c,
+        sys_user d,
+        sys_user_role e
+        WHERE
+        a.id = c.permission_id
+        AND b.id = c.role_id
+        AND b.id = e.role_id
+        AND d.id = e.user_id
+        AND b.deleted = 0
+        AND d.deleted = 0
+        <if test="type != null and type != ''">
+            AND a.type = #{type}
+        </if>
+        <choose>
+            <when test="parentId != null and parentId != ''">
+                AND a.parent_id = #{parentId}
+            </when>
+            <otherwise>
+                AND a.parent_id IS NULL
+            </otherwise>
+        </choose>
+        <if test="userId != null and userId != ''">
+            AND d.id = #{userId}
+        </if>
+        ) t
+        ORDER BY
+        t.sort_no
+    </select>
+    <select id="list" resultType="com.jyou.thinker.domain.Permission">
+        SELECT
+            a.*
+        FROM
+            sys_permission a
+        <where>
+            <if test="map.parentId != null and map.parentId != ''">
+                a.parent_id = #{map.parentId}
+            </if>
+            <if test="map.parentId == null or map.parentId == ''">
+                a.parent_id IS NULL
+            </if>
+            <if test="map.name != null and map.name.trim() != '' ">
+                and a.name LIKE concat('%',#{map.name},'%')
+            </if>
+            <if test="map.resKey != null and map.resKey != '' ">
+                and a.res_key = #{map.resKey}
+            </if>
+            <if test="map.type != null and map.type != ''">
+                and a.type= #{map.type}
+            </if>
+        </where>
+        ORDER BY
+            a.sort_no
+    </select>
+    <select id="findTreeNodes" resultType="com.jyou.thinker.domain.Permission">
+        SELECT
+        	id,
+        	parent_id,
+        	name,
+        	level,
+        	(SELECT COUNT(*) FROM sys_permission p2 WHERE p2.parent_id = p.id) size,
+        	(SELECT COUNT(*) FROM sys_role_permission rp where rp.role_id = #{roleId} and rp.permission_id = p.id) has_perm_count
+        FROM
+        	sys_permission p
+        ORDER BY p.level, p.parent_id, p.sort_no
+    </select>
+</mapper>

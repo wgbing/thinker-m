@@ -1,0 +1,72 @@
+#系统设置
+system:
+  version: 1.0
+  description:
+  name: thinker
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: thinker
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+  # JPA
+  jpa:
+    database: mysql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect  #不加这句则默认为myisam引擎
+  # Freemarker
+  freemarker:
+    charset: utf-8
+    cache: false
+    prefer-file-system-access: false
+    allowRequestOverride: false
+    allowSessionOverride: false
+    checkTemplateLocation: true
+    contentType: text/html
+    exposeRequestAttributes: false
+    exposeSessionAttributes: false
+    exposeSpringMacroHelpers: false
+    suffix: .ftl
+    template-loader-path: classpath:/templates/
+    settings.number_format: 0.###
+    settings.date_format: yyyy-MM-dd
+    settings.time_format: HH:mm:ss
+    settings.datetime_format: yyyy-MM-dd HH:mm:ss
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  #rabbitMQ
+  rabbitmq:
+    addresses: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+mybatis:
+  type-aliases-package: com.jyou.thinker.domain
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:/mybatis-config.xml
+
+mapper:
+  mappers:
+    - com.jyou.thinker.utils.MyMapper
+  not-empty: false
+  identity: MYSQL
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
